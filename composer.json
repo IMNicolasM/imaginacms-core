@@ -39,7 +39,7 @@
     "friendsofphp/php-cs-fixer": "^3.27.0"
   },
   "conflict": {
-    "lcobucci/jwt": "3.4.0"
+    "lcobucci/jwt": "5.3.0"
   },
   "suggest": {
     "asgardcms/notification-module": "Allows notifications to be sent to the user. Optionally real-time notifications."
