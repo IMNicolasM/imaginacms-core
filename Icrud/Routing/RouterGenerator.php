@@ -65,7 +65,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.create",
           'uses' => $params['controller'] . "@create",
-          'middleware' => isset($params['middleware']['create']) ? $params['middleware']['create'] : ['auth:api']
+          'middleware' => isset($params['middleware']['create']) ? $params['middleware']['create'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.create"]
         ]
       ],
       (object)[//Route index
@@ -92,7 +92,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.update",
           'uses' => $params['controller'] . "@update",
-          'middleware' => isset($params['middleware']['update']) ? $params['middleware']['update'] : ['auth:api']
+          'middleware' => isset($params['middleware']['update']) ? $params['middleware']['update'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.edit"]
         ]
       ],
       (object)[//Route delete
@@ -101,7 +101,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.delete",
           'uses' => $params['controller'] . "@delete",
-          'middleware' => isset($params['middleware']['delete']) ? $params['middleware']['delete'] : ['auth:api']
+          'middleware' => isset($params['middleware']['delete']) ? $params['middleware']['delete'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.delete"]
         ]
       ],
       (object)[//Route delete
@@ -110,7 +110,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.restore",
           'uses' => $params['controller'] . "@restore",
-          'middleware' => isset($params['middleware']['restore']) ? $params['middleware']['restore'] : ['auth:api']
+          'middleware' => isset($params['middleware']['restore']) ? $params['middleware']['restore'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.restore"]
         ]
       ],
       (object)[//Route bulk order
