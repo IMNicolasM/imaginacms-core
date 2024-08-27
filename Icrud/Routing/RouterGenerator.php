@@ -65,7 +65,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.create",
           'uses' => $params['controller'] . "@create",
-          'middleware' => isset($params['middleware']['create']) ? $params['middleware']['create'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.create"]
+          'middleware' => $this->getApiRouteMiddleware('create', $params)
         ]
       ],
       (object)[//Route index
@@ -74,7 +74,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.index",
           'uses' => $params['controller'] . "@index",
-          'middleware' => isset($params['middleware']['index']) ? $params['middleware']['index'] : ['auth:api']
+          'middleware' => $this->getApiRouteMiddleware('index', $params)
         ]
       ],
       (object)[//Route show
@@ -83,7 +83,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.show",
           'uses' => $params['controller'] . "@show",
-          'middleware' => isset($params['middleware']['show']) ? $params['middleware']['show'] : ['auth:api']
+          'middleware' => $this->getApiRouteMiddleware('show', $params)
         ]
       ],
       (object)[//Route Update
@@ -92,7 +92,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.update",
           'uses' => $params['controller'] . "@update",
-          'middleware' => isset($params['middleware']['update']) ? $params['middleware']['update'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.edit"]
+          'middleware' => $this->getApiRouteMiddleware('update', $params)
         ]
       ],
       (object)[//Route delete
@@ -101,7 +101,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.delete",
           'uses' => $params['controller'] . "@delete",
-          'middleware' => isset($params['middleware']['delete']) ? $params['middleware']['delete'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.delete"]
+          'middleware' => $this->getApiRouteMiddleware('delete', $params)
         ]
       ],
       (object)[//Route delete
@@ -110,7 +110,7 @@ class RouterGenerator
         'actions' => [
           'as' => "api.{$params['module']}.{$params['prefix']}.restore",
           'uses' => $params['controller'] . "@restore",
-          'middleware' => isset($params['middleware']['restore']) ? $params['middleware']['restore'] : ["auth:api","auth-can:{$params['module']}.{$params['prefix']}.restore"]
+          'middleware' => $this->getApiRouteMiddleware('restore', $params)
         ]
       ],
       (object)[//Route bulk order
@@ -162,5 +162,34 @@ class RouterGenerator
         }
       ]
     ];
+  }
+
+  /**
+   * Return the default permissions
+   *
+   * @param $params
+   * @return string[]
+   */
+  private function getApiRouteMiddleware($route, $params)
+  {
+    //Return the overwrite middleware
+    if (isset($params['middleware'][$route])) return $params['middleware'][$route];
+
+    //Instance the prefix to the permissions
+    $prefix = "auth-can:" . ($params['permission'] ?? "{$params['module']}.{$params['prefix']}");
+    //Define the permissions
+    $permissions = [
+      'create' => "$prefix.create",
+      'index' => "$prefix.index",
+      'show' => "$prefix.index",
+      'update' => "$prefix.edit",
+      'delete' => "$prefix.destroy",
+      'restore' => "$prefix.restore",
+    ];
+
+    $defaultRouteMiddleware = ["auth:api"];
+    if (isset($permissions[$route])) $defaultRouteMiddleware[] = $permissions[$route];
+    //Return the default middleware to the route
+    return $defaultRouteMiddleware;
   }
 }
