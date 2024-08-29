@@ -345,7 +345,6 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
             }
             //Add relation filter
             if (in_array($filterName, array_keys($modelRelations))) {
-              //dd($this->model->$filterName());
               $query = $this->setFilterQuery($query, (object)[
                 'where' => $modelRelations[$filterName],
                 'table' => $this->model->$filterName()->getTable(),
@@ -358,8 +357,8 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
         }
 
         //Filter by date
-        if (isset($filter->date)) {
-          $date = $filter->date;//Short filter date
+        if (isset($filters->date)) {
+          $date = $filters->date;//Short filter date
           $date->field = $date->field ?? 'created_at';
           if (isset($date->from))//From a date
             $query->whereDate($date->field, '>=', $date->from);
@@ -372,6 +371,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
 
         //Audit filter onlyTrashed
         if (isset($filters->onlyTrashed) && $filters->onlyTrashed) $query->onlyTrashed();
+
+        //Filter by not organization
+        if (isset($filters->withoutTenancy) && $filters->withoutTenancy) $query->withoutTenancy();
 
         //Set params into filters, to keep uploader code
         if (is_array($filters)) $filters = (object)$filters;
@@ -469,6 +471,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
             }
           }
         }
+
+        //Filter by not organization
+        if (isset($filters->withoutTenancy) && $filters->withoutTenancy) $query->withoutTenancy();
 
         //Set params into filters, to keep uploader code
         if (is_array($filters)) $filters = (object)$filters;
@@ -637,7 +642,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
     if (isset($params->filter->field)) $field = $params->filter->field;
 
     //Include trashed records
-    if($this->hasSoftDeletes()) $query->withTrashed();
+    if ($this->hasSoftDeletes()) $query->withTrashed();
 
     //get model
     $model = $query->where($field ?? 'id', $criteria)->first();
