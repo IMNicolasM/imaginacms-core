@@ -12,7 +12,7 @@ use Modules\Core\Icrud\Traits\HasCacheClearable;
 
 class CrudModel extends Model
 {
-  use AuditTrait, hasEventsWithBindings, RevisionableTrait, SingleFlaggable, HasUniqueFields, hasCacheClearable;
+  use AuditTrait, hasEventsWithBindings, RevisionableTrait, SingleFlaggable, HasUniqueFields, HasCacheClearable;
 
   function getFillables(){
     return $this->fillable;
