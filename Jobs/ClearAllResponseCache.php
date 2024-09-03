@@ -18,10 +18,14 @@ class ClearAllResponseCache implements ShouldQueue
   /**
    * Create a new job instance.
    */
-  public function __construct($entity)
+  public function __construct($params = [])
   {
-    $this->entity = $entity;
-    $this->clearAllResponseCache = $this->initCacheClearableData('allResponseCache');
+    if (isset($params['entity'])) {
+      $this->entity = $params['entity'];
+      $this->clearAllResponseCache = $this->initCacheClearableData('allResponseCache');
+    } else if (isset($params['force']) && $params['force']) {
+      $this->clearAllResponseCache = true;
+    }
   }
 
   /**
