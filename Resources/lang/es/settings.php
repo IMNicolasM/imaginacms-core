@@ -7,4 +7,5 @@ return [
     'template' => 'Plantilla del sitio',
     'google-analytics' => 'Código de Google Analytics',
     'locales' => 'Idiomas',
+    'siteCachedAt' => 'Sitio Limpiado el',
 ];

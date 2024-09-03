@@ -74,4 +74,13 @@ return [
       'rows' => 3,
     ],
   ],
+  'siteCleanedAt' => [
+    'name' => 'core::siteCleanedAt',
+    'value' => null,
+    'type' => 'fullDate',
+    'props' => [
+      'label' => 'core::settings.siteCleanedAt',
+      
+    ],
+  ],
 ];
