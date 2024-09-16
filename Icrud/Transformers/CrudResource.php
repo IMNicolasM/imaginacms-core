@@ -84,7 +84,7 @@ class CrudResource extends JsonResource
 
       //Transform relations.
       foreach ($this->getRelations() as $relationName => $relation) {
-        if (!in_array($relationName, $excludeRelations)) {
+        if (!in_array($relationName, $excludeRelations) && !in_array($relationName, array_keys($response))) {
           //Transform relation
           $response[$relationName] = $this->transformData($relation);
           //Format fields relation
