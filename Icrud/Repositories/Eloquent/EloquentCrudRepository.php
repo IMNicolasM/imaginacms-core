@@ -343,6 +343,8 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
             if (in_array($filterNameSnake, $modelFillable)) {
               //instance an own filter way when the filter name is ID
               if ($filterNameSnake == "id") $filterValue = (object)["where" => 'in', "value" => (array)$filterValue];
+              //Validate if filter is an array put where as "in" type
+              if (is_array($filterValue) && !isset($filterValue['where'])) $filterValue = (object)["where" => 'in', "value" => $filterValue];
               //Set filter
               $query = $this->setFilterQuery($query, $filterValue, $filterNameSnake);
             }
