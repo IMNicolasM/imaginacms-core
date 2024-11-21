@@ -379,16 +379,6 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
             $query->whereDate($date->field, '<=', $date->to);
         }
 
-//        //Filter by parent ID
-//        if (isset($filter->parentId)) {
-//          if ($filter->parentId == 0) {
-//            $query->whereNull("parent_id");
-//          } else {
-//            $query->where("parent_id", $filter->parentId);
-//          }
-//        }
-//        dd('epaa', $query);
-
         //Audit filter withTrashed
         if (isset($filters->withTrashed) && $filters->withTrashed) $query->withTrashed();
 
