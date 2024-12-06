@@ -120,6 +120,28 @@ trait hasEventsWithBindings
     static::registerModelEvent('updatedWithBindings', $callback);
   }
 
+  /**
+   * Register event to before delete model
+   *
+   * @param \Closure|string $callback
+   * @return void
+   */
+  public static function deletingWithBindings($callback)
+  {
+    static::registerModelEvent('deletingWithBindings', $callback);
+  }
+
+  /**
+   * Register event to after update model
+   *
+   * @param \Closure|string $callback
+   * @return void
+   */
+  public static function deletedWithBindings($callback)
+  {
+    static::registerModelEvent('deletedWithBindings', $callback);
+  }
+
   //=== Event handlers with bindings
 
   /**
@@ -188,5 +210,27 @@ trait hasEventsWithBindings
   {
     // fire custom event on the model
     $this->fireModelEvent('updatedWithBindings', false, $bindings);
+  }
+
+  /**
+   * Method to fire event before delete model
+   *
+   * @param $bindings
+   */
+  public function deletingCrudModel($bindings = [])
+  {
+    // fire custom event on the model
+    $this->fireModelEvent('deletingWithBindings', false, $bindings);
+  }
+
+  /**
+   * Method to fire event after delete model
+   *
+   * @param $bindings
+   */
+  public function deletedCrudModel($bindings = [])
+  {
+    // fire custom event on the model
+    $this->fireModelEvent('deletedWithBindings', false, $bindings);
   }
 }
