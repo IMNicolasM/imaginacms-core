@@ -351,7 +351,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
               //Validate if filter is an array put where as "in" type
               if (is_array($filterValue) && !isset($filterValue['where'])) $filterValue = (object)["where" => 'in', "value" => $filterValue];
               //Filter by parent ID
-              if ($filterNameSnake == "parent_id" &&  !$filterValue) $filterValue = (object)["where" => 'null'];
+              if ($filterNameSnake == "parent_id" && !$filterValue) $filterValue = (object)["where" => 'null'];
               //Set filter
               $query = $this->setFilterQuery($query, $filterValue, $filterNameSnake);
             }
@@ -773,6 +773,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
 
     //Dispatch deleting events
     if ($eventName == 'deleting') {
+      //Emit event deletingWithBindings
+      if (method_exists($model, 'deletingCrudModel'))
+        $model->deletingCrudModel(['params' => $params, 'criteria' => $criteria]);
     }
 
     //Dispatch deleted events
