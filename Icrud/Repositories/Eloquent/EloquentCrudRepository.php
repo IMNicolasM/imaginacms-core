@@ -211,18 +211,18 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
     foreach (($model->modelRelations ?? []) as $relationName => $relationType) {
       // Check if exist relation in data
       if (!in_array($relationName, $this->replaceSyncModelRelations) && array_key_exists($relationName, $data)) {
-        // Sync Has Many relation
+          // Sync Has Many relation
         if ($relationType == "hasMany") {
-          // Validate if exist relation with items
-          $model->$relationName()->forceDelete();
-          // Create and Set relation to Model
-          $model->setRelation($relationName, $model->$relationName()->createMany($data[$relationName]));
+            // Validate if exist relation with items
+            $model->$relationName()->forceDelete();
+            // Create and Set relation to Model
+            $model->setRelation($relationName, $model->$relationName()->createMany($data[$relationName]));
         }
 
-        // Sync Belongs to many relation
+          // Sync Belongs to many relation
         if ($relationType == "belongsToMany") {
-          $model->$relationName()->sync($data[$relationName]);
-          $model->setRelation($relationName, $model->$relationName);
+            $model->$relationName()->sync($data[$relationName]);
+            $model->setRelation($relationName, $model->$relationName);
         }
       }
     }
@@ -813,14 +813,15 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
     return $newParams != $queryParams;
   }
 
+
   private function hasSoftDeletes()
   {
     return in_array(SoftDeletes::class, class_uses_recursive($this->model));
   }
 
-  public function updateOrCreate($data)
+  public function updateOrCreate($validationData, $data)
   {
-    return $this->model->updateOrCreate($data);
+    return $this->model->updateOrCreate($validationData, $data);
   }
 
 }

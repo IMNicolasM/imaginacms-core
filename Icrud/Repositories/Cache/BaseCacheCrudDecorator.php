@@ -108,11 +108,11 @@ abstract class BaseCacheCrudDecorator extends BaseCacheDecorator implements Base
     return array_merge(is_null($this->tags) ? [] : (is_array($this->tags) ? $this->tags : [$this->tags]), [$this->entityName]);
   }
 
-  public function updateOrCreate($data)
+  public function updateOrCreate($validate, $data)
   {
-    
+
     $this->cache->tags($this->getTags())->flush();
 
-    return $this->repository->updateOrCreate($data);
+    return $this->repository->updateOrCreate($validate, $data);
   }
 }
