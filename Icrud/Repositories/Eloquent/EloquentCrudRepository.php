@@ -204,6 +204,21 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
   }
 
   /**
+   * Map the definition of model relation
+   *
+   * @return array
+   */
+  public function getModelRelations()
+  {
+    $modelRelations = [];
+    foreach (($this->model->modelRelations ?? []) as $name => $value) {
+      if (is_string($value)) $modelRelations[$name] = ['relation' => $value];
+      else if (is_array($value) && isset($value['relation'])) $modelRelations[$name] = $value;
+    }
+    return $modelRelations;
+  }
+
+  /**
    * Method to sync Model Relations by default
    *
    * @param $model ,$data
@@ -211,21 +226,54 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
    */
   public function defaultSyncModelRelations($model, $data)
   {
-    foreach (($model->modelRelations ?? []) as $relationName => $relationType) {
+    foreach ($this->getModelRelations() as $relationName => $relation) {
       // Check if exist relation in data
       if (!in_array($relationName, $this->replaceSyncModelRelations) && array_key_exists($relationName, $data)) {
-        // Sync Has Many relation
-        if ($relationType == "hasMany") {
-          // Validate if exist relation with items
-          $model->$relationName()->forceDelete();
-          // Create and Set relation to Model
-          $model->setRelation($relationName, $model->$relationName()->createMany($data[$relationName]));
-        }
+        //Sync as updateOrCreateMany
+        if ($relation['type'] == 'updateOrCreateMany') {
+          if (isset($relation['compareKeys']) && is_array($relation['compareKeys'])) {
+            //Instance the relation
+            $relationInstance = $model->$relationName();
+            // Get the related repository
+            $relatedRepository = $relationInstance->getRelated()->repository ?? null;
+            // Dynamically determine the foreign key for the relation
+            $foreignKey = $relation['foreignKey'] ?? (method_exists($relationInstance, 'getForeignKeyName')
+              ? $relationInstance->getForeignKeyName()
+              : null);
 
-        // Sync Belongs to many relation
-        if ($relationType == "belongsToMany") {
-          $model->$relationName()->sync($data[$relationName]);
-          $model->setRelation($relationName, $model->$relationName);
+            if ($relatedRepository && $foreignKey) {
+              //Init the related repository
+              $relatedRepository = app($relatedRepository);
+              //update or create each related record
+              foreach ($data[$relationName] as $item) {
+                // Validate that all compare keys exist in the item
+                $missingKeys = array_diff($relation['compareKeys'], array_keys($item));
+                //Validate
+                if (empty($missingKeys)) {
+                  // Build the comparison array dynamically
+                  $compare = array_merge([$foreignKey => $model->id], array_intersect_key($item, array_flip($relation['compareKeys'])));
+                  // Use updateOrCreate with the dynamic compare keys
+                  $relatedRepository->updateOrCreate($compare, $item);
+                }
+              }
+            }
+          }
+          break;
+        }
+        //Default laravel relation
+        switch ($relation['relation']) {
+          // Sync Has Many relation
+          case 'hasMany':
+            // Validate if exist relation with items
+            $model->$relationName()->forceDelete();
+            // Create and Set relation to Model
+            $model->setRelation($relationName, $model->$relationName()->createMany($data[$relationName]));
+            break;
+          // Sync Belongs to many relation
+          case 'belongsToMany':
+            $model->$relationName()->sync($data[$relationName]);
+            $model->setRelation($relationName, $model->$relationName);
+            break;
         }
       }
     }
@@ -243,7 +291,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
   public function syncModelRelations($model, $data)
   {
     //Get model relations data from attribute of model
-    $modelRelationsData = ($model->modelRelations ?? []);
+    $modelRelationsData = $this->getModelRelations();
 
     /**
      * Note: Add relation name to replaceSyncModelRelations attribute to replace it
@@ -334,7 +382,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
       if (isset($params->filter)) {
         $filters = $params->filter;//Short data filter
         //Instance model relations
-        $modelRelations = ($this->model->modelRelations ?? []);
+        $modelRelations = $this->getModelRelations();
         //Instance model fillable
         $modelFillable = array_merge(
           $this->model->getFillable(),
@@ -362,7 +410,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
             //Add relation filter
             if (in_array($filterName, array_keys($modelRelations))) {
               $query = $this->setFilterQuery($query, (object)[
-                'where' => $modelRelations[$filterName],
+                'where' => $modelRelations[$filterName]['relation'],
                 'table' => $this->model->$filterName()->getTable(),
                 'foreignPivotKey' => $this->model->$filterName()->getForeignPivotKeyName(),
                 'relatedPivotKey' => $this->model->$filterName()->getRelatedPivotKeyName(),
@@ -824,7 +872,14 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
 
   public function updateOrCreate($validationData, $data)
   {
-    return $this->model->updateOrCreate($validationData, $data);
+    //update or create
+    $model = $this->model->updateOrCreate($validationData, $data);
+    // Default Sync model relations
+    $model = $this->defaultSyncModelRelations($model, $data);
+    // Custom Sync model relations
+    $model = $this->syncModelRelations($model, $data);
+    //Response
+    return $model;
   }
 
   /**

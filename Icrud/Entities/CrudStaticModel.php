@@ -26,12 +26,16 @@ class CrudStaticModel
     $response = collect($response);
     //Apply filters
     $filters = json_decode(request()->input('filter') ?? '{}');
+    $modelAttributes = array_keys($response->first());
     foreach ($filters as $name => $value) {
-      $value = (array)$value;
-      $response = $response->whereIn($name, $value);
+      if (in_array($name, $modelAttributes)) {
+        $value = (array)$value;
+        $response = $response->whereIn($name, $value);
+      }
     }
+
     //Repsonse
-    return $response;
+    return $response->values();
   }
 
   public function show($statusId)
