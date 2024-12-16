@@ -119,7 +119,7 @@ class ProcessBulkItems implements ShouldQueue
         \Log::info($this->log."Webhook Process|DataToResponse: ".json_encode($dataToResponse));
 
         $eventName = 'custom.bulk '.$this->modelClass;
-        event($eventName, $dataToResponse);
+        event($eventName, [$dataToResponse]);
 
     }
    
