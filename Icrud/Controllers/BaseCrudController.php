@@ -312,12 +312,10 @@ class BaseCrudController extends BaseApiController
       $params = $this->getParamsRequest($request);
 
       //Only in dev mode
-      /*
       if(app()->environment('local')){
         if(isset($params->filter) && isset($params->filter->generateTestingData) && $params->filter->generateTestingData)
           $items = generateTestingData($params->filter->generateTestingData);
       }
-      */
       
       //Init Service
       $bulkService = app()->makeWith(BulkService::class,['params' => ['controller'=> $this, 'items'=> $items]]);
