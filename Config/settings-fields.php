@@ -30,7 +30,8 @@ return [
     'columns' => 'col-12 col-md-6',
     'props' => [
       'label' => 'core::settings.locales',
-      'multiple' => true
+      'multiple' => true,
+      'sortValueBy' => 'ORDER_SELECTED'
     ],
     'loadOptions' => [
       'apiRoute' => 'apiRoutes.qsite.siteSettings',
@@ -80,7 +81,7 @@ return [
     'type' => 'fullDate',
     'props' => [
       'label' => 'core::settings.siteCleanedAt',
-      
+
     ],
   ],
   'chunkSizeToBulkProcess' => [
