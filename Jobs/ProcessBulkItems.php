@@ -136,12 +136,13 @@ class ProcessBulkItems implements ShouldQueue
 
         //Clean Homepage
         try{
+            \Log::info('initProcessCache|Clean Home');
             $url = url('/');
             $client = new \GuzzleHttp\Client();
             $promise = $client->get($url, ['headers' => ['icache-bypass' => 1]]);
             \Log::info('Route Update Cache: '. $url);
         }catch(\Exception $e){
-            \Log::error($this->log."initProcessCache|msj: ".$e->getMessage());
+            \Log::error($this->log."initProcessCache|Clean Home| Error Msj: ".$e->getMessage());
         }
 
     }
