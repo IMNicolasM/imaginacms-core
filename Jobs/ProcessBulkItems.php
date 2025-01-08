@@ -56,7 +56,7 @@ class ProcessBulkItems implements ShouldQueue
         $this->webhookProcess($msjs,$itemsCompleted);
 
         //Apply ClearAllResponseCache (JOB) and clean the home
-        initProcessCache();
+        $this->initProcessCache();
         
         \Log::info($this->log."chunkId: ".$this->chunkId."||END");
             
@@ -120,6 +120,30 @@ class ProcessBulkItems implements ShouldQueue
 
         $eventName = 'custom.bulk '.$this->modelClass;
         event($eventName, [$dataToResponse]);
+
+    }
+
+    /**
+     * Init Process Cache | Final JOB
+     */
+    private function initProcessCache()
+    {
+
+        \Log::info($this->log."initProcessCache");
+
+        //JOB Clear
+        \Modules\Core\Jobs\ClearAllResponseCache::dispatch(['force' => true]);
+
+        //Clean Homepage
+        try{
+            \Log::info('initProcessCache|Clean Home');
+            $url = url('/');
+            $client = new \GuzzleHttp\Client();
+            $promise = $client->get($url, ['headers' => ['icache-bypass' => 1]]);
+            \Log::info('Route Update Cache: '. $url);
+        }catch(\Exception $e){
+            \Log::error($this->log."initProcessCache|Clean Home| Error Msj: ".$e->getMessage());
+        }
 
     }
    
