@@ -528,7 +528,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
       if (count($modelFields)) {
         $query->where(function ($query) use ($modelFields, $criteria) {
           foreach ($modelFields as $field) {
-            $query->orWhere($field, $criteria);
+            $query->orWhere($this->model->getTable().".".$field, $criteria);
           }
         });
       }
