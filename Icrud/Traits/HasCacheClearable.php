@@ -10,13 +10,36 @@ trait HasCacheClearable
 {
   public static function bootHasCacheClearable()
   {
-    static::created(function ($model) {
-      $model->initCacheClearable();
+    static::creating(function ($model) {
+      if (method_exists($model, 'createdWithBindings')) {
+        // Listen for createdWithBindings instead of created
+        $model::createdWithBindings(function ($model) {
+          $model->initCacheClearable();
+
+        });
+      } else {
+        // Default to created event
+        static::created(function ($model) {
+          $model->initCacheClearable();
+        });
+      }
     });
 
-    static::saved(function ($model) {
-      if ($model->wasRecentlyCreated) return; //Validate saved only for updated model
-      $model->initCacheClearable();
+    static::saving(function ($model) {
+      if ($model->exists) {
+        if (method_exists($model, 'updatedWithBindings')) {
+          // Listen for createdWithBindings instead of created
+          $model::updatedWithBindings(function ($model) {
+            $model->initCacheClearable();
+
+          });
+        } else {
+          // Default to saved event
+          static::saved(function ($model) {
+            $model->initCacheClearable();
+          });
+        }
+      }
     });
 
     static::deleting(function ($model) {
