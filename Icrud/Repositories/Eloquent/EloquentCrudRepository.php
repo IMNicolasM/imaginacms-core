@@ -506,12 +506,14 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
       //Include relationships
       $query = $this->includeToQuery($query, $params, "show");
 
-      //Get fields to use as criteria filter
       $criteriaFields = $params->filter->field ?? ['id'];
       if (!is_array($criteriaFields)) $criteriaFields = [$criteriaFields];
 
+
+
       // Set filter column translatable for criteria
       $translatableFields = array_intersect($criteriaFields, $translatableAttributes);
+      \Log::info('epaaaa-------------------'. get_class($this->model). ' '. json_encode($translatableFields). \App::getLocale());
       if (count($translatableFields)) {
         $query->whereHas('translations', function ($query) use ($criteria, $filter, $translatableFields) {
           $query->where('locale', $filter->locale ?? \App::getLocale())
@@ -566,6 +568,8 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
       //reusing query if exist
       $query = $this->query;
     }
+//    if(str_contains(get_class($this->model), 'Post'))
+//    dd('epaa', $query->toSql(), json_encode($query->getBindings()));
 
     //Response as query
     if (isset($params->returnAsQuery) && $params->returnAsQuery) return $query;
