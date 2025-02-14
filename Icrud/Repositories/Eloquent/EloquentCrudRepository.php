@@ -117,9 +117,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
 
     //Set where condition
     if ($filterWhere == 'in') {
-      $query->whereIn($fieldName, $filterValue);
+      $query->whereIn($fieldName, (array) $filterValue);
     } else if ($filterWhere == 'notIn') {
-      $query->whereNotIn($fieldName, $filterValue);
+      $query->whereNotIn($fieldName, (array) $filterValue);
     } else if ($filterWhere == 'between') {
       $query->whereBetween($fieldName, $filterValue);
     } else if ($filterWhere == 'notBetween') {
