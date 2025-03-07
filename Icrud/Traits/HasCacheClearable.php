@@ -58,7 +58,7 @@ trait HasCacheClearable
     if ($clearResponseCache) {
       if (method_exists($this, 'getCacheClearableData')) {
         ClearCacheByRoutes::dispatch($this)->onQueue('cacheByRoutes');
-        ClearCacheWithCDN::dispatch($this);
+        ClearCacheWithCDN::dispatch($this)->onQueue('cacheByRoutes');
         ClearAllResponseCache::dispatch(['entity' => $this]);
       }
     }
