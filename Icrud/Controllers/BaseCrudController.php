@@ -161,6 +161,14 @@ class BaseCrudController extends BaseApiController
       //Get params
       $params = $this->getParamsRequest($request);
 
+      //Get model data
+      $modelData = $request->input('attributes') ?? [];
+
+      //Validate Request
+      if (isset($this->model->requestValidation['delete'])) {
+        $this->validateRequestApi(new $this->model->requestValidation['delete']($modelData));
+      }
+
       //Delete methomodel
       $this->modelRepository->deleteBy($criteria, $params);
 
@@ -333,21 +341,21 @@ class BaseCrudController extends BaseApiController
   {
     \DB::beginTransaction(); //DB Transaction
     try {
-      
+
       $items = $request->input('items') ?? null;
       $params = $this->getParamsRequest($request);
-      
+
       //Only in dev mode
       if(app()->environment('local')){
         if(isset($params->filter) && isset($params->filter->generateTestingData) && $params->filter->generateTestingData)
           $items = generateTestingData($params->filter->generateTestingData);
       }
-      
+
       //Init Service
       $bulkService = app()->makeWith(BulkService::class,['params' => ['controller'=> $this, 'items'=> $items]]);
       //Final Response
       $response = $bulkService->execute();
-    
+
       \DB::commit();//Commit to DataBase
     } catch (\Exception $e) {
       \DB::rollback();//Rollback to Data Base
@@ -357,5 +365,5 @@ class BaseCrudController extends BaseApiController
     //Return response
     return response()->json($response ?? ["data" => "Request successful"], $status ?? 200);
   }
-  
+
 }
