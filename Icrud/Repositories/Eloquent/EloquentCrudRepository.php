@@ -404,6 +404,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
   {
     // compare parameters validate use of old query
     $differentParameters = $this->compareParameters($params);
+
     //reusing query if exist
     if (empty($this->query) || $differentParameters) {
       //Instance Query
@@ -422,10 +423,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
           $this->model->getFillable(),
           ['id', 'created_at', 'updated_at', 'created_by', 'updated_by']
         );
-
+        $translatableAttributes = $this->model->translatedAttributes ?? [];
         //Set fiter order to params.order: TODO: to keep and don't break old version api
         if (isset($filters->order) && !isset($params->order)) $params->order = $filters->order;
-
         //Add Requested Filters
         foreach ($filters as $filterName => $filterValue) {
           $filterNameSnake = camelToSnake($filterName);//Get filter name as snakeCase
@@ -440,6 +440,13 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
               if ($filterNameSnake == "parent_id" && !$filterValue) $filterValue = (object)["where" => 'null'];
               //Set filter
               $query = $this->setFilterQuery($query, $filterValue, $filterNameSnake);
+            }
+            //Add filter by translatables attributes
+            if (in_array($filterNameSnake, $translatableAttributes)) {
+              $query->whereHas('translations', function ($query) use ($filters, $filterNameSnake, $filterValue) {
+                $query->where('locale', $filters->locale ?? \App::getLocale());
+                $query = $this->setFilterQuery($query, $filterValue, $filterNameSnake);
+              });
             }
             //Add relation filter
             $relationPath = explode('.', $filterName);
