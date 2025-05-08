@@ -645,8 +645,19 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
     if (isset($model)) {
       $data['id'] = $model->id;
       $this->beforeUpdate($data);
-      //Update Model
-      $model->update((array)$data);
+      // Update attributes
+      $model->fill((array)$data);
+      // Save model if dirty
+      if ($model->isDirty()) $model->save();
+      // Check for dirty translations and fire the touch to save model timestamp
+      if (method_exists($model, 'translations')) {
+        foreach ($model->translations as $translation) {
+          if ($translation->isDirty()) {
+            $model->touch();
+            break;
+          }
+        }
+      }
       // Default Sync model relations
       $model = $this->defaultSyncModelRelations($model, $data);
       // Custom Sync model relations
