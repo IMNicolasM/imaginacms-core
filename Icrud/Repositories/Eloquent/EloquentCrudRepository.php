@@ -646,7 +646,9 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
       $data['id'] = $model->id;
       $this->beforeUpdate($data);
       // Update attributes
-      $model->fill((array)$data);
+      $nonColumnAttributes = ['medias_single', 'medias_multi'];
+      $fillableData = collect($data)->except($nonColumnAttributes)->toArray();
+      $model->fill((array)$fillableData);
       // Save model if dirty
       if ($model->isDirty()) $model->save();
       // Check for dirty translations and fire the touch to save model timestamp
