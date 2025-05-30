@@ -54,8 +54,10 @@ trait HasCacheClearable
    */
   public function initCacheClearable()
   {
+    $responseCache = env('RESPONSE_CACHE_ENABLED');
+    $appCache = env('APP_CACHE');
     $clearResponseCache = app()->bound('clearResponseCache') ? app('clearResponseCache') : true;
-    if ($clearResponseCache) {
+    if ($clearResponseCache && $responseCache && $appCache) {
       if (method_exists($this, 'getCacheClearableData')) {
         ClearCacheByRoutes::dispatch($this)->onQueue('cacheByRoutes');
         ClearCacheWithCDN::dispatch($this)->onQueue('cacheByRoutes');
