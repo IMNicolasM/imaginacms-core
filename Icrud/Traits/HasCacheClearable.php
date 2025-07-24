@@ -5,6 +5,7 @@ namespace Modules\Core\Icrud\Traits;
 use Modules\Core\Jobs\ClearCacheByRoutes;
 use Modules\Core\Jobs\ClearCacheWithCDN;
 use Modules\Core\Jobs\ClearAllResponseCache;
+use Illuminate\Support\Facades\Bus;
 
 trait HasCacheClearable
 {
@@ -59,9 +60,11 @@ trait HasCacheClearable
     $clearResponseCache = app()->bound('clearResponseCache') ? app('clearResponseCache') : true;
     if ($clearResponseCache && $responseCache && $appCache) {
       if (method_exists($this, 'getCacheClearableData')) {
-        ClearCacheByRoutes::dispatch($this)->onQueue('cacheByRoutes');
-        ClearCacheWithCDN::dispatch($this)->onQueue('cacheByRoutes');
-        ClearAllResponseCache::dispatch(['entity' => $this]);
+        Bus::chain([
+          new ClearAllResponseCache(['entity' => $this]),
+          new ClearCacheByRoutes($this),
+          new ClearCacheWithCDN($this),
+        ])->onQueue('cacheByRoutes')->dispatch();
       }
     }
   }
