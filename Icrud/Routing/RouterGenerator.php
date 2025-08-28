@@ -128,7 +128,7 @@ class RouterGenerator
           'middleware' => isset($params['middleware']['order']) ? $params['middleware']['order'] : ['auth:api'],
         ],
       ],
-      (object)[//Route bulk 
+      (object)[//Route bulk
         'method' => 'post',
         'path' => '/bulk/',
         'actions' => [
@@ -136,6 +136,15 @@ class RouterGenerator
           'uses' => $params['controller'] . "@bulk",
           'middleware' => $this->getApiRouteMiddleware('bulk', $params)
         ]
+      ],
+      (object)[//Route updateOrCreate
+        'method' => 'put',
+        'path' => '/',
+        'actions' => [
+          'as' => "api.{$params['module']}.{$params['prefix']}.upsert",
+          'uses' => $params['controller'] . '@updateOrCreate',
+          'middleware' => $this->getApiRouteMiddleware('updateOrCreate', $params),
+        ],
       ]
     ];
   }
@@ -203,6 +212,10 @@ class RouterGenerator
     ];
 
     $defaultRouteMiddleware = ["auth:api"];
+    if($route == 'updateOrCreate') {
+      $defaultRouteMiddleware[] = $permissions['create'];
+      $defaultRouteMiddleware[] = $permissions['update'];
+    }
     if (isset($permissions[$route])) $defaultRouteMiddleware[] = $permissions[$route];
     //Return the default middleware to the route
     return $defaultRouteMiddleware;

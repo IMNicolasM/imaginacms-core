@@ -366,4 +366,52 @@ class BaseCrudController extends BaseApiController
     return response()->json($response ?? ["data" => "Request successful"], $status ?? 200);
   }
 
+
+  /**
+   * Controller to update or create model by criteria
+   *
+   * @return mixed
+   */
+  public function updateOrCreate(Request $request)
+  {
+    \DB::beginTransaction(); //DB Transaction
+    try {
+      //Get model data
+      $modelData = $request->input('attributes') ?? [];
+      //Get Parameters from URL.
+      $params = $this->getParamsRequest($request);
+
+
+      //auto-insert the criteria in the data to update
+      $search = $params->filter->search ?? [];
+      if (is_object($search)) {
+        $search = (array) $search;
+      }
+
+      //Validate Request
+      if (isset($this->model->requestValidation['updateOrCreate'])) {
+        $this->validateRequestApi(new $this->model->requestValidation['updateOrCreate']($modelData));
+      }
+
+      //Update model
+      $model = $this->modelRepository->updateOrCreate($search, $modelData);
+
+      //Throw exception if no found item
+      if (!$model) {
+        throw new Exception('Item not found', 204);
+      }
+
+      //Response
+      $response = ['data' => CrudResource::transformData($model)];
+      \DB::commit(); //Commit to DataBase
+    } catch (\Exception $e) {
+      \DB::rollback(); //Rollback to Data Base
+      $status = $this->getStatusError($e->getCode());
+      $response = $status == 409 ? json_decode($e->getMessage()) :
+        ['messages' => [['message' => $e->getMessage(), 'type' => 'error']]];
+    }
+
+    //Return response
+    return response()->json($response ?? ['data' => 'Request successful'], $status ?? 200);
+  }
 }

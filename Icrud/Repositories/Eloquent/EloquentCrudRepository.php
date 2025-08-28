@@ -930,7 +930,7 @@ abstract class EloquentCrudRepository extends EloquentBaseRepository implements 
     $modelData = array_merge($validationData, $data);
     //update Or Create the record
     if ($model) $this->updateBy($model->id, $modelData);
-    else $this->create($modelData);
+    else $model = $this->create($modelData);
     //Response
     return $model;
   }
